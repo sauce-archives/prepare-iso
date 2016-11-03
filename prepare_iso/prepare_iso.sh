@@ -31,8 +31,8 @@
 usage() {
 	cat <<EOF
 Usage:
-$(basename "$0") [-upiD] "/path/to/InstallESD.dmg" /path/to/output/directory
-$(basename "$0") [-upiD] "/path/to/Install OS X [Name].app" /path/to/output/directory
+$(basename "$0") [[-upiD] [-l LAYOUT]] "/path/to/InstallESD.dmg" /path/to/output/directory
+$(basename "$0") [[-upiD] [-l LAYOUT]] "/path/to/Install OS X [Name].app" /path/to/output/directory
 
 Description:
 Converts an OS X installer to a new image that contains components
@@ -48,6 +48,10 @@ Optional switches:
 
   -i <path to image>
     Sets the path of the avatar image for the root user, defaulting to the vagrant icon.
+
+  -l <layout>
+    Sets the Partition Table layout.  Defaults to SPUD (Apple-Style, works with VirtualBox).
+      Set to GPTSPUD to get something that works with QEMU
 
   -D <flag>
     Sets the specified flag. Valid flags are:
@@ -91,18 +95,24 @@ USER="vagrant"
 PASSWORD="vagrant"
 IMAGE_PATH="$SUPPORT_DIR/vagrant.jpg"
 
+# Partition Layout
+LAYOUT=SPUD
+
 # Flags
 DISABLE_REMOTE_MANAGEMENT=0
 DISABLE_SCREEN_SHARING=0
 DISABLE_SIP=0
 
-while getopts u:p:i:D: OPT; do
+while getopts u:p:i:D:l: OPT; do
   case "$OPT" in
     u)
       USER="$OPTARG"
       ;;
     p)
       PASSWORD="$OPTARG"
+      ;;
+    l)
+      LAYOUT="$OPTARG"
       ;;
     i)
       IMAGE_PATH="$OPTARG"
@@ -258,7 +268,7 @@ hdiutil detach "$MNT_BASE_SYSTEM"
 BASE_SYSTEM_DMG_RW="$(/usr/bin/mktemp /tmp/veewee-osx-basesystem-rw.XXXX).dmg"
 
 msg_status "Creating empty read-write DMG located at $BASE_SYSTEM_DMG_RW.."
-hdiutil create -o "$BASE_SYSTEM_DMG_RW" -size 10g -layout SPUD -fs HFS+J
+hdiutil create -o "$BASE_SYSTEM_DMG_RW" -size 10g -layout $LAYOUT -fs HFS+J
 hdiutil attach "$BASE_SYSTEM_DMG_RW" -mountpoint "$MNT_BASE_SYSTEM" -nobrowse -owners on
 
 msg_status "Restoring ('asr restore') the BaseSystem to the read-write DMG.."
@@ -313,7 +323,7 @@ hdiutil detach "$MNT_BASE_SYSTEM"
 
 if [ $DMG_OS_VERS_MAJOR -lt 9 ]; then
 	msg_status "Pre-Mavericks we save back the modified BaseSystem to the root of the ESD."
-	hdiutil convert -format UDZO -o "$MNT_ESD/BaseSystem.dmg" "$BASE_SYSTEM_DMG_RW"
+	hdiutil convert -format UDTO -o "$MNT_ESD/BaseSystem.dmg" "$BASE_SYSTEM_DMG_RW"
 fi
 
 msg_status "Unmounting ESD.."
@@ -321,10 +331,10 @@ hdiutil detach "$MNT_ESD"
 
 if [ $DMG_OS_VERS_MAJOR -ge 9 ]; then
 	msg_status "On Mavericks and later, the entire modified BaseSystem is our output dmg."
-	hdiutil convert -format UDZO -o "$OUTPUT_DMG" "$BASE_SYSTEM_DMG_RW"
+	hdiutil convert -format UDTO -o "$OUTPUT_DMG" "$BASE_SYSTEM_DMG_RW"
 else
 	msg_status "Pre-Mavericks we're modifying the original ESD file."
-	hdiutil convert -format UDZO -o "$OUTPUT_DMG" -shadow "$SHADOW_FILE" "$ESD"
+	hdiutil convert -format UDTO -o "$OUTPUT_DMG" -shadow "$SHADOW_FILE" "$ESD"
 fi
 rm -rf "$MNT_ESD" "$SHADOW_FILE"
 
