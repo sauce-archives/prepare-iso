@@ -26,12 +26,12 @@ About the command:
 - First parameter after the flags is the location of either the Sierra app, or the path to `InstallESD.dmg` inside the app (`/Applications/Install macOS Sierra.app/Contents/SharedSupport/InstallESD.dmg`).
 - Second parameter is the output directory for the newly built image.
 
-The command will finish with output like this (ignore the error - the tool isn't expecting the .dmg.cdr extension for some reason):
+The command will finish with output like this:
 ```
-created: /Users/allison/iso/OSX_InstallESD_10.12_16A323.dmg.cdr
 -- Fixing permissions..
 -- Checksumming output image..
-md5: /Users/allison/iso/OSX_InstallESD_10.12_16A323.dmg: No such file or directory
+-- MD5: 4323943c7fefd47a9218c5777ee11b36
+-- Done. Built image is located at /Users/allison/iso/OSX_InstallESD_10.12_16A323.dmg.cdr. Add this iso and its checksum to your template.
 ```
 
 # Next Steps
