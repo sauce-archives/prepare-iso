@@ -8,10 +8,23 @@ All builds should run locally, even for QEMU - just transfer the finished image 
 
 First, we need a copy of the Sierra app. You might already have it - check the location below. If not, it's easiest to download a copy from the App store (unfortunately). Link: https://itunes.apple.com/us/app/macos-sierra/id1127487414?mt=12
 
-The file will be located here:
-```
-/Applications/Install macOS Sierra.app
-```
+It's possible to build a machine with different admin account settings, and without the vagrant ssh keys, for use with other systems, e.g. continuous integration.
+
+Use with the Fusion provider requires Vagrant 1.3.0, and use with the VirtualBox provider Vagrant 1.6.3 if using the Rsync file sync mechanism. Note that the VeeWee template also does not have any VirtualBox or Parallels support.
+
+Provisioning steps that are defined in the template via items in the [scripts](https://github.com/timsutton/osx-vm-templates/tree/master/scripts) directory:
+- [Vagrant-specific configuration](https://www.vagrantup.com/docs/boxes/base.html)
+- VM guest tools installation if on VMware
+- Xcode CLI tools installation
+- Chef installation via the [Chef Omnitruck method](https://docs.chef.io/install_omnibus.html)
+- Puppet installation via [Puppetlabs Mac installers](https://downloads.puppetlabs.com/mac), both legacy and 4
+- Disk shrinking for VMware
+
+## Supported guest OS versions
+
+Currently this prepare script and template supports all versions of OS X that are distributed through the App Store: OS X Lion (10.7) through El Capitan (10.11), and macOS Sierra (10.12).
+
+This project currently only supplies a single Packer template (`template.json`), so the hypervisor's configured guest OS version (i.e. `darwin12-64`) does not accurately reflect the actual installed OS. I haven't found there to be any functional differences depending on these configured guest versions.
 
 # Building the Image
 
