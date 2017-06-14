@@ -202,7 +202,7 @@ if [ $? -ne 0 ]; then
 fi
 
 msg_status "Mounting BaseSystem.."
-BASE_SYSTEM_DMG="$MNT_ESD/BaseSystem.dmg"
+BASE_SYSTEM_DMG="$1/Contents/SharedSupport/BaseSystem.dmg"
 MNT_BASE_SYSTEM=$(/usr/bin/mktemp -d /tmp/veewee-osx-basesystem.XXXX)
 [ ! -e "$BASE_SYSTEM_DMG" ] && msg_error "Could not find BaseSystem.dmg in $MNT_ESD"
 hdiutil attach "$BASE_SYSTEM_DMG" -mountpoint "$MNT_BASE_SYSTEM" -nobrowse -owners on
@@ -286,7 +286,7 @@ if [ $DMG_OS_VERS_MAJOR -ge 9 ]; then
     BASESYSTEM_OUTPUT_IMAGE="$OUTPUT_DMG"
     PACKAGES_DIR="$MNT_BASE_SYSTEM/System/Installation/Packages"
 
-    rm "$PACKAGES_DIR"
+    rm "$PACKAGES_DIR" || echo "$PACKAGES_DIR does not exist"
 	msg_status "Moving 'Packages' directory from the ESD to BaseSystem.."
 	mv -v "$MNT_ESD/Packages" "$MNT_BASE_SYSTEM/System/Installation/"
 
@@ -294,8 +294,8 @@ if [ $DMG_OS_VERS_MAJOR -ge 9 ]; then
 	# installer corrupt if this isn't included, because it cannot verify BaseSystem's
 	# consistency and perform a recovery partition verification
 	msg_status "Copying in original BaseSystem dmg and chunklist.."
-	cp "$MNT_ESD/BaseSystem.dmg" "$MNT_BASE_SYSTEM/"
-	cp "$MNT_ESD/BaseSystem.chunklist" "$MNT_BASE_SYSTEM/"
+	cp "$BASE_SYSTEM_DMG" "$MNT_BASE_SYSTEM/"
+	cp "$1/Contents/SharedSupport/BaseSystem.chunklist" "$MNT_BASE_SYSTEM/"
 else
     MNT_BASE_SYSTEM="/Volumes/Mac OS X Base System"
     BASESYSTEM_OUTPUT_IMAGE="$MNT_ESD/BaseSystem.dmg"
@@ -353,7 +353,7 @@ if [ -n "$DEFAULT_ISO_DIR" ]; then
 fi
 
 msg_status "Checksumming output image.."
-MD5=$(md5 -q "$OUTPUT_DMG")
+MD5=$(md5 -q "$OUTPUT_DMG.cdr")
 msg_status "MD5: $MD5"
 
 msg_status "Done. Built image is located at $OUTPUT_DMG. Add this iso and its checksum to your template."
